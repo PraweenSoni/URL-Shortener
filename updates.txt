@@ -1,0 +1,7 @@
+add link delete function (in li tag, also timming delete function)
+create userdeleteurls.json(that have data to save user deleted links);
+
+add urls delete automatic in 30days
+create autodeleteurls.json(that have data to save delete auto links);
+
+also add qr code funcality.
