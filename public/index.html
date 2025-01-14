@@ -1,114 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>URL Shortener</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
 
-  <body>
-    <section>
-      <div class="container">
-        <h2>URL <span style="color: #4bbf87">Shortener</span></h2>
-        <form id="shorten-form">
-          <div>
-            <label for="url">Enter URL :</label>
-            <input
-              type="url"
-              name="url"
-              id="url"
-              required
-              placeholder="Enter You Long URL"
-            />
-          </div>
-          <div>
-            <label for="shortCode">Customize Short URL :</label>
-            <input
-              type="text"
-              name="shortCode"
-              id="shortCode"
-              placeholder="Optional : If you want customize URL"
-            />
-          </div>
-          <button type="submit">Shorten URL</button>
-        </form>
-        <h3>Your Shortened URLs</h3>
-        <ul id="shortened-urls"></ul>
-      </div>
-    </section>
-    <footer>
-      Copyright &copy; 2024
-      <a href="http://praweensoni.netlify.app" target="_blank">Praween Soni</a>
-    </footer>
-    <script>
-      document
-        .getElementById("shorten-form")
-        .addEventListener("submit", async (event) => {
-          event.preventDefault();
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>URL Shortener</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
 
-          const formData = new FormData(event.target);
-          const url = formData.get("url");
-          const shortCode = formData.get("shortCode");
+<body>
+  <section>
+    <div class="container">
+      <h2>URL <span style="color: #4bbf87">Shortener</span></h2>
+      <form id="shorten-form">
+        <div>
+          <label for="url">Enter URL :</label>
+          <input type="url" name="url" id="url" required placeholder="Enter You Long URL" />
+        </div>
+        <div>
+          <label for="shortCode">Customize Short URL :</label>
+          <input type="text" name="shortCode" id="shortCode" placeholder="Optional : If you want customize URL" />
+        </div>
+        <button type="submit">Shorten URL</button>
+      </form>
+      <h3>Your Shortened URLs</h3>
+      <ul id="shortened-urls"></ul>
+    </div>
+  </section>
+  <footer>
+    Copyright &copy; 2024
+    <a href="http://praweensoni.netlify.app" target="_blank">Praween Soni</a>
+  </footer>
+  <script>
 
-          // Validate URL
-          if (!url) {
-            alert("URL is required.");
-            return;
-          }
-          if (!isValidURL(url)) {
-            alert("Please enter a valid URL.");
-            return;
-          }
-          // For debugging perpose
-          // console.log("URL:", url, "ShortCode:", shortCode);
+    const fetchAllUrls = async () => {
+      const response = await fetch("/links");
+      const links = await response.json();
+      // console.log("links", links);       // For debugging perpose
 
-          try {
-            const response = await fetch("/shorten", {
-              method: "POST",
-              headers: { "Content-type": "application/json" },
-              body: JSON.stringify({ url, shortCode }),
-            });
+      const list = document.getElementById("shortened-urls");
+      list.innerHTML = "";
 
-            if (response.ok) {
-              const { shortCode } = await response.json();
-              alert("URL shortened successfully!");
-
-              const shortenedUrlLi = document.createElement("li");
-              const shortenedUrlA = document.createElement("a");
-
-              // Set the href and text content for the anchor tag
-              shortenedUrlA.href = `${window.location.origin}/${shortCode}`;
-              shortenedUrlA.textContent = `${window.location.origin}/${shortCode}`;
-              shortenedUrlA.target = "_blank";
-
-              // Append the anchor tag to the list item
-              shortenedUrlLi.appendChild(shortenedUrlA);
-
-              // Append the list item to the list
-              document
-                .getElementById("shortened-urls")
-                .appendChild(shortenedUrlLi);
-
-              // Reset the form
-              event.target.reset();
-            } else {
-              const errorMessage = await response.text();
-              alert(errorMessage);
-            }
-          } catch (error) {
-            console.log(error);
-          }
-        });
-
-      function isValidURL(string) {
-        try {
-          new URL(string);
-          return true;
-        } catch {
-          return false;
-        }
+      for (const [shortCode, url] of Object.entries(links)) {
+        const li = document.createElement('li');
+        // orignal url
+        // const truncatedURL = url.length >= 30 ? `${url.slice(0, 30)}....` : url;
+        li.innerHTML = `<a href="/${shortCode}" target="_blank">${window.location.origin}/${shortCode}</a>`;
+        list.appendChild(li);
       }
-    </script>
-  </body>
+    }
+
+    document
+      .getElementById("shorten-form")
+      .addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const formData = new FormData(event.target);
+        const url = formData.get("url");
+        const shortCode = formData.get("shortCode");
+
+        // Validate URL
+        if (!url) {
+          alert("URL is required.");
+          return;
+        }
+        if (!isValidURL(url)) {
+          alert("Please enter a valid URL.");
+          return;
+        }
+        // For debugging perpose
+        // console.log("URL:", url, "ShortCode:", shortCode);
+
+        try {
+          const response = await fetch("/shorten", {
+            method: "POST",
+            headers: { "Content-type": "application/json" },
+            body: JSON.stringify({ url, shortCode }),
+          });
+
+          if (response.ok) {
+            fetchAllUrls();
+            const { shortCode } = await response.json();
+            alert("URL shortened successfully!");
+
+            const shortenedUrlLi = document.createElement("li");
+            const shortenedUrlA = document.createElement("a");
+
+            // Set the href and text content for the anchor tag
+            shortenedUrlA.href = `${window.location.origin}/${shortCode}`;
+            shortenedUrlA.textContent = `${window.location.origin}/${shortCode}`;
+            shortenedUrlA.target = "_blank";
+
+            // Append the anchor tag to the list item
+            shortenedUrlLi.appendChild(shortenedUrlA);
+
+            // Append the list item to the list
+            document
+              .getElementById("shortened-urls")
+              .appendChild(shortenedUrlLi);
+
+            // Reset the form
+            event.target.reset();
+          } else {
+            const errorMessage = await response.text();
+            alert(errorMessage);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+
+    function isValidURL(string) {
+      try {
+        new URL(string);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+    fetchAllUrls();
+  </script>
+</body>
+
 </html>
