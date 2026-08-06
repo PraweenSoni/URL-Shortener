@@ -23,12 +23,12 @@
         </div>
         <button type="submit">Shorten URL</button>
       </form>
-      <h3>Your Shortened URLs</h3>
+      <h3>Shortened URLs</h3>
       <ul id="shortened-urls"></ul>
     </div>
   </section>
   <footer>
-    Copyright &copy; 2024
+    Copyright &copy; 2025
     <a href="http://praweensoni.netlify.app" target="_blank">Praween Soni</a>
   </footer>
   <script>
@@ -46,6 +46,15 @@
         // orignal url
         // const truncatedURL = url.length >= 30 ? `${url.slice(0, 30)}....` : url;
         li.innerHTML = `<a href="/${shortCode}" target="_blank">${window.location.origin}/${shortCode}</a>`;
+        li.addEventListener('click', (e) => {
+          e.preventDefault();
+          const textcopy = `${window.location.origin}/${shortCode}`;
+          navigator.clipboard.writeText(textcopy).then(() => {
+            alert("Link Copied!");
+          }, () => {
+            alert("Failed!!");
+          });
+        });
         list.appendChild(li);
       }
     }
@@ -98,7 +107,6 @@
             document
               .getElementById("shortened-urls")
               .appendChild(shortenedUrlLi);
-
             // Reset the form
             event.target.reset();
           } else {
